@@ -11,13 +11,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Initialize Session State variables
+# Initialize Session State
 if 'webcam_active' not in st.session_state:
     st.session_state.webcam_active = True
-if 'captured_image' not in st.session_state:
-    st.session_state.captured_image = None
+if 'image_source' not in st.session_state:
+    st.session_state.image_source = None
 
-# 2. Refined Studio Aesthetic
+# 2. Studio Aesthetic
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
@@ -71,12 +71,13 @@ output_details = interpreter.get_output_details()
 CLASS_NAMES = ['Paper', 'Rock', 'Scissors']
 
 def run_analysis(img):
-    """Processes input with X-axis mirroring and 160x160 scaling"""
+    """Processes input with X-axis mirroring and 160x160 scaling[cite: 1]"""
     frame = np.array(img)
-    mirrored = cv2.flip(frame, 1) # Natural mirror view
+    # Mirroring only for live camera feel; usually ignored for static uploads[cite: 1]
+    mirrored = cv2.flip(frame, 1) 
     
     pil_img = Image.fromarray(mirrored)
-    prep = pil_img.resize((160, 160)) # Prep for MobileNetV2
+    prep = pil_img.resize((160, 160)) # Prep for MobileNetV2[cite: 1]
     
     input_data = np.expand_dims(np.array(prep, dtype=np.float32), axis=0)
     interpreter.set_tensor(input_details[0]['index'], input_data)
@@ -86,11 +87,11 @@ def run_analysis(img):
     idx = np.argmax(output)
     return CLASS_NAMES[idx], output[idx] * 100, pil_img
 
-# 4. Interface Logic
+# 4. Interface Logic[cite: 1]
 st.markdown('''
     <div class="header-bar">
         <div style="font-weight:700; letter-spacing:1px;">ROCK PAPER SCISSORS | GESTURE GAME</div>
-        <a href="https://colab.research.google.com/drive/15UDN-XO4_j2co9XsqS3kQZLNubGgfCQ1?usp=sharing" 
+        <a href="https://github.com/themehmi/Rock-Paper-Scissors-Classifier" 
            target="_blank" style="text-decoration:none; color:#444; font-size:12px;">SOURCE_CODE</a>
     </div>
 ''', unsafe_allow_html=True)
@@ -100,33 +101,38 @@ st.write("---")
 
 col_left, col_right = st.columns([1, 1], gap="large")
 
+# Reset image if mode switches
+if "last_mode" not in st.session_state:
+    st.session_state.last_mode = mode
+if st.session_state.last_mode != mode:
+    st.session_state.image_source = None
+    st.session_state.webcam_active = True
+    st.session_state.last_mode = mode
+
 with col_left:
-    if mode == "UPLOAD_FILE":
-        user_file = st.file_uploader("", type=['jpg', 'jpeg', 'png'])
-        if user_file:
-            st.session_state.captured_image = Image.open(user_file).convert('RGB')
-    else:
-        # If camera is active, show the input
+    if mode == "UPLOAD FILE":
+        # Always show file uploader in this mode
+        uploaded_file = st.file_uploader("Select a gesture image...", type=['jpg', 'jpeg', 'png'])
+        if uploaded_file is not None:
+            st.session_state.image_source = Image.open(uploaded_file).convert('RGB')
+    
+    elif mode == "USE CAMERA":
         if st.session_state.webcam_active:
             cam_data = st.camera_input("CAPTURE GESTURE")
             if cam_data:
-                # Save to session and "shut off" camera
-                st.session_state.captured_image = Image.open(cam_data).convert('RGB')
+                st.session_state.image_source = Image.open(cam_data).convert('RGB')
                 st.session_state.webcam_active = False
                 st.rerun()
         else:
-            # Show image preview and reset option
-            if st.session_state.captured_image:
-                st.info("Analysis based on captured frame.")
             if st.button("RESET & TAKE NEW PICTURE"):
                 st.session_state.webcam_active = True
-                st.session_state.captured_image = None
+                st.session_state.image_source = None
                 st.rerun()
 
 with col_right:
-    # Always pull the image from session state for analysis
-    if st.session_state.captured_image:
-        label, conf, final_view = run_analysis(st.session_state.captured_image)
+    # Run prediction immediately when image_source is populated[cite: 1]
+    if st.session_state.image_source:
+        label, conf, final_view = run_analysis(st.session_state.image_source)
         st.image(final_view, use_container_width=True)
         
         st.markdown(f"""
