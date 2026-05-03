@@ -1,0 +1,4 @@
+tensorflow-cpu  # Using the CPU version saves space
+streamlit
+Pillow
+numpy
