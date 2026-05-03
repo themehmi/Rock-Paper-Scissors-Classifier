@@ -1,4 +1,5 @@
-tensorflow-cpu  # Using the CPU version saves space
 streamlit
+tensorflow-cpu
 Pillow
 numpy
+opencv-python-headless
