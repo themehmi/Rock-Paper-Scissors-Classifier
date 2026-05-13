@@ -71,13 +71,13 @@ output_details = interpreter.get_output_details()
 CLASS_NAMES = ['Paper', 'Rock', 'Scissors']
 
 def run_analysis(img):
-    """Processes input with X-axis mirroring and 160x160 scaling[cite: 1]"""
+    """Processes input with X-axis mirroring and 160x160 scaling"""
     frame = np.array(img)
-    # Mirroring only for live camera feel; usually ignored for static uploads[cite: 1]
+    # Mirroring only for live camera feel; usually ignored for static uploads
     mirrored = cv2.flip(frame, 1) 
     
     pil_img = Image.fromarray(mirrored)
-    prep = pil_img.resize((160, 160)) # Prep for MobileNetV2[cite: 1]
+    prep = pil_img.resize((160, 160)) # Prep for MobileNetV2
     
     input_data = np.expand_dims(np.array(prep, dtype=np.float32), axis=0)
     interpreter.set_tensor(input_details[0]['index'], input_data)
@@ -87,10 +87,13 @@ def run_analysis(img):
     idx = np.argmax(output)
     return CLASS_NAMES[idx], output[idx] * 100, pil_img
 
-# 4. Interface Logic[cite: 1]
+# 4. Interface Logic
 st.markdown('''
     <div class="header-bar">
-        <div style="font-weight:700; letter-spacing:1px;">ROCK PAPER SCISSORS | GESTURE GAME</div>
+        <div>
+            <div style="font-weight:700; letter-spacing:1px;">ROCK PAPER SCISSORS | GESTURE GAME</div>
+            <div style="font-size:12px; color:#888; margin-top:4px; font-weight:300;">*Disclaimer: This app only functions properly when the background is clean (black or white).</div>
+        </div>
         <a href="https://github.com/themehmi/Rock-Paper-Scissors-Classifier" 
            target="_blank" style="text-decoration:none; color:#444; font-size:12px;">SOURCE_CODE</a>
     </div>
@@ -130,7 +133,7 @@ with col_left:
                 st.rerun()
 
 with col_right:
-    # Run prediction immediately when image_source is populated[cite: 1]
+    # Run prediction immediately when image_source is populated
     if st.session_state.image_source:
         label, conf, final_view = run_analysis(st.session_state.image_source)
         st.image(final_view, use_container_width=True)
