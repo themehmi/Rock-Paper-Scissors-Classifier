@@ -35,7 +35,7 @@ st.markdown("""
     .header-bar {
         display: flex; justify-content: space-between; align-items: center;
         padding: 2rem 0; border-bottom: 1px solid #1a1a1a;
-        margin-bottom: 3rem;
+        margin-bottom: 1rem; /* Reduced bottom margin to fit disclaimer nicely */
     }
     .result-container {
         background: var(--card);
@@ -90,14 +90,15 @@ def run_analysis(img):
 # 4. Interface Logic
 st.markdown('''
     <div class="header-bar">
-        <div>
-            <div style="font-weight:700; letter-spacing:1px;">ROCK PAPER SCISSORS | GESTURE GAME</div>
-            <div style="font-size:12px; color:#888; margin-top:4px; font-weight:300;">*Disclaimer: This app only functions properly when the background is clean (black or white).</div>
-        </div>
+        <div style="font-weight:700; letter-spacing:1px;">ROCK PAPER SCISSORS | GESTURE GAME</div>
         <a href="https://github.com/themehmi/Rock-Paper-Scissors-Classifier" 
            target="_blank" style="text-decoration:none; color:#444; font-size:12px;">SOURCE_CODE</a>
     </div>
 ''', unsafe_allow_html=True)
+
+# Prominent Disclaimer added here
+st.warning("⚠️ **Disclaimer:** This app only functions properly when the background is clean (black or white).", icon="⚠️")
+st.write("---")
 
 mode = st.radio("", ("UPLOAD FILE", "USE CAMERA"), horizontal=True)
 st.write("---")
